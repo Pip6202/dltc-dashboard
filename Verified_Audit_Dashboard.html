@@ -302,6 +302,7 @@ const SEED = [
   {id:23,date:'2026-04-24',sym:'QQQ',strike:660,signal:'CALL',ema:'N',macdx:'Y',macd:-0.1123,dmi:'D+',dp:24.91,dm:20.9,adxc:22.29,adxp:23.33,adx2:24.5,rsi:56.79,outcome:'W'},
   {id:24,date:'2026-04-27',sym:'QQQ',strike:662,signal:'PUT',ema:'N',macdx:'Y',macd:-0.2015,dmi:'D-',dp:16.9,dm:25.05,adxc:16.04,adxp:15.78,adx2:16.9,rsi:37.85,outcome:'W'},
   {id:25,date:'2026-04-28',sym:'QQQ',strike:659,signal:'CALL',ema:'Y',macdx:'Y',macd:0.0518,dmi:'D+',dp:28.41,dm:19.41,adxc:22.89,adxp:23.2,adx2:24.78,rsi:59.51,outcome:'W'},
+  {id:26,date:'2026-04-29',sym:'QQQ',strike:660,signal:'CALL',ema:'Y',macdx:'Y',macd:-0.3087,dmi:'D+',dp:18.4,dm:25.0,adxc:35.5,adxp:null,adx2:null,rsi:45.78,outcome:'W',hook:'N',otm:2},
 ];
 
 const SHEET_ID = '1I27-8VG28VcDWOscpxQ4tA_6EtO8DIWJj6W1wB7LS0Q';
@@ -478,11 +479,12 @@ function renderDiagnostics() {
   document.getElementById('nvdaLabel').textContent = `NVDA: ${s.nvdaW}/${s.nvda}`;
   document.getElementById('nvdaPct').textContent = pct(s.nvdaW, s.nvda);
   // OTM dynamic calculation
-  const otm1 = trades.filter(t => t.otm === 1);
+  const otm1 = trades.filter(t => parseInt(t.otm) === 1);
   const otm1W = otm1.filter(t => t.outcome === 'W');
-  const otm2 = trades.filter(t => t.otm === 2);
+  const otm2 = trades.filter(t => parseInt(t.otm) === 2);
   const otm2W = otm2.filter(t => t.outcome === 'W');
   document.getElementById('otm1Pct').textContent = otm1.length ? Math.round(otm1W.length/otm1.length*100)+'%' : '0%';
+  document.getElementById('otm1Pct').style.color = 'var(--text-dark)';
   document.getElementById('otm1Sub').textContent = `${otm1W.length} Wins / ${otm1.length} Total`;
   document.getElementById('otm2Pct').textContent = otm2.length ? Math.round(otm2W.length/otm2.length*100)+'%' : '0%';
   document.getElementById('otm2Pct').style.color = otm2.length && otm2W.length === otm2.length ? 'var(--blue-card)' : 'var(--text-dark)';
@@ -506,7 +508,7 @@ function renderAuditLog() {
       <div><span class="macd ${mc}">MACD Δ ${ms}${t.macd.toFixed(4)}</span><br><span style="font-size:11px;color:var(--text-light)">5/9: ${t.ema==='Y'?'✓':'✗'} &nbsp; MACD X: ${t.macdx==='Y'?'✓':'✗'} &nbsp; Hook: ${t.hook==='Y'?'✓':'✗'}</span></div>
       <div><span class="tbl-dmi ${dc}">${t.dmi||'—'}</span><br><span style="font-size:11px;color:var(--text-light)">D+ ${t.dp.toFixed(1)} / D- ${t.dm.toFixed(1)}</span></div>
       <div><div style="font-size:13px;font-weight:700;">${t.adxc?t.adxc.toFixed(1)+' ADX':'—'}</div><div style="font-size:12px;color:var(--text-mid);">${t.rsi?'RSI: '+t.rsi:''}</div></div>
-      <div>${ob}</div>
+      <div style="display:flex;align-items:center;gap:8px;">${ob}<button onclick="deleteTrade(${t.id})" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-light);line-height:1;" title="Delete">🗑</button></div>
     </div>`;
   }).join('');
 }
@@ -541,6 +543,19 @@ function toggleSetup() {
   const box = document.getElementById('setupBox');
   box.style.display = box.style.display === 'none' ? 'block' : 'none';
 }
+// ── DELETE TRADE ──
+function deleteTrade(id) {
+  if (!confirm('Delete trade #' + id + '? This cannot be undone.')) return;
+  // Remove from extraTrades if it's there
+  const extra = JSON.parse(localStorage.getItem('extraTrades') || '[]');
+  const newExtra = extra.filter(t => t.id !== id);
+  localStorage.setItem('extraTrades', JSON.stringify(newExtra));
+  // Remove from trades array
+  trades = trades.filter(t => t.id !== id);
+  renderAll();
+  setSyncState('ok', 'Trade #' + id + ' deleted');
+}
+
 // ── STARTUP ──
 initTrades();
 renderAll();
