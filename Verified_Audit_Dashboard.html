@@ -184,8 +184,8 @@
     <div class="card">
       <div class="card-title"><svg viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>OTM Execution Audit</div>
       <div class="otm-inner">
-        <div class="otm-box"><div class="otm-label">1 OTM Performance</div><div class="otm-pct" style="color:var(--text-dark)">0%</div><div class="otm-sub">0 Wins / 0 Total</div></div>
-        <div class="otm-box"><div class="otm-label">2 OTM Performance</div><div class="otm-pct" style="color:var(--blue-card)">100%</div><div class="otm-sub">1 Wins / 1 Total</div></div>
+        <div class="otm-box"><div class="otm-label">1 OTM Performance</div><div class="otm-pct" id="otm1Pct" style="color:var(--text-dark)">0%</div><div class="otm-sub" id="otm1Sub">0 Wins / 0 Total</div></div>
+        <div class="otm-box"><div class="otm-label">2 OTM Performance</div><div class="otm-pct" id="otm2Pct" style="color:var(--text-dark)">0%</div><div class="otm-sub" id="otm2Sub">0 Wins / 0 Total</div></div>
       </div>
     </div>
   </div>
@@ -386,6 +386,7 @@ async function saveEntry() {
     sym:     document.getElementById('f-asset').value,
     strike:  parseFloat(strike),
     signal:  document.getElementById('f-signal').value,
+    otm:     parseInt(document.getElementById('f-otm').value) || null,
     ema:     document.getElementById('f-ema').checked ? 'Y' : 'N',
     macdx:   document.getElementById('f-macdx').checked ? 'Y' : 'N',
     macd:    parseFloat(document.getElementById('f-macd').value) || 0,
@@ -491,6 +492,16 @@ function renderDiagnostics() {
   document.getElementById('qqqPuts').textContent = `${s.qqqPW} Wins (${s.qqqP?Math.round(s.qqqPW/s.qqqP*100):0}%)`;
   document.getElementById('nvdaLabel').textContent = `NVDA: ${s.nvdaW}/${s.nvda}`;
   document.getElementById('nvdaPct').textContent = pct(s.nvdaW, s.nvda);
+  // OTM dynamic calculation
+  const otm1 = trades.filter(t => t.otm === 1);
+  const otm1W = otm1.filter(t => t.outcome === 'W');
+  const otm2 = trades.filter(t => t.otm === 2);
+  const otm2W = otm2.filter(t => t.outcome === 'W');
+  document.getElementById('otm1Pct').textContent = otm1.length ? Math.round(otm1W.length/otm1.length*100)+'%' : '0%';
+  document.getElementById('otm1Sub').textContent = `${otm1W.length} Wins / ${otm1.length} Total`;
+  document.getElementById('otm2Pct').textContent = otm2.length ? Math.round(otm2W.length/otm2.length*100)+'%' : '0%';
+  document.getElementById('otm2Pct').style.color = otm2.length && otm2W.length === otm2.length ? 'var(--blue-card)' : 'var(--text-dark)';
+  document.getElementById('otm2Sub').textContent = `${otm2W.length} Wins / ${otm2.length} Total`;
   document.getElementById('noIndNum').textContent = s.noSupport;
   document.getElementById('skillAlpha').innerHTML = `${s.avgP}<span>/5</span>`;
 }
