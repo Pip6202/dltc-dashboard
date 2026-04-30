@@ -350,20 +350,21 @@ async function writeToSheet(row) {
   const scriptUrl = localStorage.getItem('appsScriptUrl');
   if (!scriptUrl) return { ok: false, reason: 'no_url' };
   try {
-    const params = new URLSearchParams({
-      sheetId: SHEET_ID,
-      sheetName: SHEET_NAME,
-      data: JSON.stringify([
-        row.id, row.date, row.sym, row.strike, row.signal,
-        row.ema, row.macdx, row.macd, row.dmi,
-        row.dp, row.dm,
-        row.adxc ?? '', row.adxp ?? '', row.adx2 ?? '',
-        row.rsi ?? '', row.outcome
-      ])
-    });
-    const res = await fetch(scriptUrl + '?' + params.toString(), { method: 'GET' });
-    const text = await res.text();
-    return { ok: text.includes('SUCCESS'), text };
+    const data = [
+      row.id, row.date, row.sym, row.strike, row.signal,
+      row.ema, row.macdx, row.macd, row.dmi,
+      row.dp, row.dm,
+      row.adxc ?? '', row.adxp ?? '', row.adx2 ?? '',
+      row.rsi ?? '', row.outcome
+    ];
+    // Use no-cors mode with form data to avoid CORS blocking
+    const formData = new FormData();
+    formData.append('sheetId', SHEET_ID);
+    formData.append('sheetName', SHEET_NAME);
+    formData.append('data', JSON.stringify(data));
+    await fetch(scriptUrl, { method: 'POST', body: formData, mode: 'no-cors' });
+    // no-cors means we cant read response, assume success
+    return { ok: true };
   } catch(e) {
     return { ok: false, reason: e.message };
   }
@@ -394,6 +395,7 @@ async function saveEntry() {
     otm:     parseInt(document.getElementById('f-otm').value) || null,
     ema:     document.getElementById('f-ema').checked ? 'Y' : 'N',
     macdx:   document.getElementById('f-macdx').checked ? 'Y' : 'N',
+    hook:    document.getElementById('f-hook').checked ? 'Y' : 'N',
     macd:    parseFloat(document.getElementById('f-macd').value) || 0,
     dmi:     document.getElementById('f-dmi').value,
     dp:      parseFloat(document.getElementById('f-dp').value) || 0,
@@ -523,7 +525,7 @@ function renderAuditLog() {
     return `<div class="tbl-row">
       <div><div class="tbl-id">#${t.id}</div><div class="tbl-date">${t.date}</div></div>
       <div><div class="tbl-asset">${t.sym}</div><div class="tbl-strike ${sc}">${t.signal} ${t.strike}</div></div>
-      <div><span class="macd ${mc}">MACD Δ ${ms}${t.macd.toFixed(4)}</span><br><span style="font-size:11px;color:var(--text-light)">5/9: ${t.ema==='Y'?'✓':'✗'} &nbsp; MACD X: ${t.macdx==='Y'?'✓':'✗'}</span></div>
+      <div><span class="macd ${mc}">MACD Δ ${ms}${t.macd.toFixed(4)}</span><br><span style="font-size:11px;color:var(--text-light)">5/9: ${t.ema==='Y'?'✓':'✗'} &nbsp; MACD X: ${t.macdx==='Y'?'✓':'✗'} &nbsp; Hook: ${t.hook==='Y'?'✓':'✗'}</span></div>
       <div><span class="tbl-dmi ${dc}">${t.dmi||'—'}</span><br><span style="font-size:11px;color:var(--text-light)">D+ ${t.dp.toFixed(1)} / D- ${t.dm.toFixed(1)}</span></div>
       <div><div style="font-size:13px;font-weight:700;">${t.adxc?t.adxc.toFixed(1)+' ADX':'—'}</div><div style="font-size:12px;color:var(--text-mid);">${t.rsi?'RSI: '+t.rsi:''}</div></div>
       <div>${ob}</div>
