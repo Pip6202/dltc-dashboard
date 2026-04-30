@@ -107,7 +107,7 @@
   .setup-box input{width:100%;border:1.5px solid #bfdbfe;border-radius:8px;padding:10px 12px;font-size:13px;font-family:'Barlow',sans-serif;color:var(--text-dark);outline:none;margin-top:6px;}
   .setup-box input:focus{border-color:var(--blue-card);}
   .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
-  .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+  .form-row-3{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
   .form-row-full{margin-bottom:14px;}
   .form-group{display:flex;flex-direction:column;gap:6px;}
   .form-group label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-light);}
@@ -227,38 +227,43 @@
 <div id="page-newentry" class="page main">
   <div class="entry-wrap">
 
-    <!-- Apps Script setup box — hidden once URL is saved -->
-    <div class="setup-box" id="setupBox">
-      <h3>⚡ One-Time Setup — Connect to Google Sheets</h3>
-      <p>Paste your Google Apps Script Web App URL below to enable automatic saving directly to your sheet. <a href="https://docs.google.com/spreadsheets/d/1I27-8VG28VcDWOscpxQ4tA_6EtO8DIWJj6W1wB7LS0Q/edit" target="_blank">Open your sheet →</a></p>
-      <p><strong>Steps:</strong> In the sheet, click <strong>Extensions → Apps Script</strong>, paste the script from the instructions, click <strong>Deploy → New Deployment → Web App</strong>, set access to <em>Anyone</em>, copy the URL and paste it here.</p>
+    <!-- Settings gear -->
+    <div style="text-align:right;margin-bottom:12px;">
+      <button onclick="toggleSetup()" style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);">&#9881; Sheet Settings</button>
+    </div>
+    <div class="setup-box" id="setupBox" style="display:none;">
+      <h3>Google Sheets Connection</h3>
+      <p>Paste your Google Apps Script Web App URL below to sync trades directly to your sheet.</p>
       <input type="text" id="appsScriptUrl" placeholder="Paste your Apps Script Web App URL here..." oninput="saveScriptUrl()">
-      <p style="margin-top:8px;font-size:11px;color:#3b82f6;">✓ URL is saved automatically in your browser once entered.</p>
+      <p style="margin-top:8px;font-size:11px;color:#3b82f6;">URL is saved automatically in your browser once entered.</p>
     </div>
 
     <div class="form-row">
       <div class="form-group"><label>Trade Date</label><input type="date" id="f-date"></div>
       <div class="form-group"><label>Asset Ticker</label><select id="f-asset"><option>QQQ</option><option>NVDA</option></select></div>
     </div>
-    <div class="form-row">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;">
       <div class="form-group"><label>Strike Price</label><input type="number" id="f-strike" placeholder="Strike Price"></div>
-      <div class="form-group"><label>OTM Distance</label><input type="number" id="f-otm" placeholder="OTM Distance"></div>
+      <div class="form-group"><label>OTM Distance</label><input type="number" id="f-otm" placeholder="1, 2, 3..."></div>
       <div class="form-group"><label>Signal</label><select id="f-signal"><option>CALL</option><option>PUT</option></select></div>
     </div>
-    <div class="form-row-3">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
       <div class="form-group"><label>Raw D+</label><input type="number" id="f-dp" placeholder="D+" step="0.0001"></div>
       <div class="form-group"><label>Raw D-</label><input type="number" id="f-dm" placeholder="D-" step="0.0001"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
       <div class="form-group"><label>RSI Level</label><input type="number" id="f-rsi-entry" placeholder="RSI" step="0.01"></div>
       <div class="form-group"><label>DMI Lead</label><select id="f-dmi"><option>D+</option><option>D-</option></select></div>
     </div>
-    <div class="form-row">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;">
       <div class="form-group"><label>ADX Current</label><input type="number" id="f-adxc" placeholder="ADX Cur" step="0.0001"></div>
       <div class="form-group"><label>ADX Prior</label><input type="number" id="f-adxp" placeholder="ADX Pri" step="0.0001"></div>
       <div class="form-group"><label>ADX 2 Back</label><input type="number" id="f-adx2" placeholder="ADX 2B" step="0.0001"></div>
     </div>
-    <div class="form-row-full">
+    <div class="form-row-full" style="margin-bottom:14px;">
       <div class="form-group"><label>MACD Delta Numerical</label><input type="number" id="f-macd" placeholder="e.g. 0.0856" step="0.0001"></div>
     </div>
+
     <div class="checkbox-group">
       <div class="checkbox-row"><label>5/9 EMA Cross?</label><input type="checkbox" id="f-ema"></div>
       <div class="checkbox-row"><label>MACD D Cross?</label><input type="checkbox" id="f-macdx"></div>
@@ -551,6 +556,11 @@ function setSyncState(state, label) {
   document.getElementById('syncLabel').textContent = label;
 }
 
+
+function toggleSetup() {
+  const box = document.getElementById('setupBox');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
 // ── STARTUP ──
 initTrades();
 renderAll();
