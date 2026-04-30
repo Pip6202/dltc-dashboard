@@ -227,16 +227,7 @@
 <div id="page-newentry" class="page main">
   <div class="entry-wrap">
 
-    <!-- Settings gear -->
-    <div style="text-align:right;margin-bottom:12px;">
-      <button onclick="toggleSetup()" style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-light);">&#9881; Sheet Settings</button>
-    </div>
-    <div class="setup-box" id="setupBox" style="display:none;">
-      <h3>Google Sheets Connection</h3>
-      <p>Paste your Google Apps Script Web App URL below to sync trades directly to your sheet.</p>
-      <input type="text" id="appsScriptUrl" placeholder="Paste your Apps Script Web App URL here..." oninput="saveScriptUrl()">
-      <p style="margin-top:8px;font-size:11px;color:#3b82f6;">URL is saved automatically in your browser once entered.</p>
-    </div>
+
 
     <div class="form-row">
       <div class="form-group"><label>Trade Date</label><input type="date" id="f-date"></div>
@@ -416,23 +407,10 @@ async function saveEntry() {
   trades.push(row);
   renderAll();
 
-  // 3. Try writing to Google Sheet via Apps Script
-  setSyncState('syncing', 'Writing to sheet...');
-  const result = await writeToSheet(row);
-
-  if (result.ok) {
-    msg.style.cssText = 'display:block;color:var(--win-green);font-weight:700;font-size:13px;text-align:center;margin-top:12px';
-    msg.textContent = `✓ Trade #${newId} saved to Google Sheet! Dashboard updated.`;
-    setSyncState('ok', 'Synced to sheet ' + new Date().toLocaleTimeString());
-  } else if (result.reason === 'no_url') {
-    msg.style.cssText = 'display:block;color:var(--accent-gold);font-weight:700;font-size:13px;text-align:center;margin-top:12px';
-    msg.textContent = `✓ Trade #${newId} saved locally. Paste your Apps Script URL above to also sync to Google Sheets.`;
-    setSyncState('ok', 'Saved locally');
-  } else {
-    msg.style.cssText = 'display:block;color:var(--accent-gold);font-weight:700;font-size:13px;text-align:center;margin-top:12px';
-    msg.textContent = `✓ Trade #${newId} saved locally. Sheet sync failed — check your Apps Script URL.`;
-    setSyncState('error', 'Sheet sync failed');
-  }
+  // 3. Confirm save
+  msg.style.cssText = 'display:block;color:var(--win-green);font-weight:700;font-size:13px;text-align:center;margin-top:12px';
+  msg.textContent = `✓ Trade #${newId} saved! Dashboard updated.`;
+  setSyncState('ok', 'Trade #' + newId + ' saved ' + new Date().toLocaleTimeString());
 
   // Reset form
   btn.disabled = false;
